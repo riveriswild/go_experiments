@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"go_tutorial/helper"
+	"time"
+	"sync"
 )
 
 var conferenceName = "Go Conference"
@@ -17,6 +19,8 @@ type UserData struct {
 	userTickets uint
 }
 
+var wg = sync.WaitGroup{}
+
 func main () {
 	greetUsers(remainingTickets)
 
@@ -29,7 +33,10 @@ func main () {
 
 		if isValidName && isValidEmail && validTicketCount {
 			remainingTickets := bookTicket(remainingTickets, userTickets, userName, lastName, email)
-			
+
+			wg.Add(1)
+            go sendTicket(userTickets, userName, lastName, email)
+
 			firstNames := getFirstNames()
 			fmt.Printf("These are the bookings: %v\n", firstNames)
 
@@ -52,6 +59,7 @@ func main () {
 			}
 		}
 	}
+	wg.Wait()
 }
 
 func greetUsers(remainingTickets uint) {
@@ -111,4 +119,14 @@ func bookTicket(remainingTickets uint, userTickets uint, userName string, lastNa
 	fmt.Printf("User %v %v with email %v booked %v tickets \n", userName, lastName, email, userTickets)
 	fmt.Printf("Remaining tickets: %v \n", remainingTickets)
 	return remainingTickets
+}
+
+func sendTicket(userTickets uint, userName string, lastName string, email string) {
+	time.Sleep(10*time.Second)
+	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, userName, lastName)
+	fmt.Println("******************")
+	fmt.Printf("Sending tickets %v to %v", ticket, email)
+	fmt.Println("******************")
+	wg.Done()
+
 }
